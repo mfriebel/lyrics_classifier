@@ -4,19 +4,24 @@ Creates model for artist prediction
 """
 # Import statements
 from extract_lyrics import get_labels_lyrics_lists, lyrics_all_preprocess
+from get_lyrics import download_lyrics_html
+
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.pipeline import make_pipeline
-
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import cross_val_score, train_test_split
+from wordcloud import WordCloud
+from pyfiglet import Figlet
 
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
+
 import pickle
 import os
+import re
+
 
 PATH = './artists/'
 
@@ -77,18 +82,25 @@ def train_mnb(X, y, **kwargs):
     return pipeline
 
 def get_artists():
+    banner = Figlet()
+    print(banner.renderText('TRAIN NLP MODEL'))
     artists = []
-    num_artist = int(input('Please enter the number of artists to train your model with:'))
+    num_artist = int(input('Please enter the number of artists to train your model with: '))
     for _ in range(num_artist):
-        artist = input('Please enter the artist:')
+        artist = input('Please enter the artist: ')
+        artist = re.sub('[\s]', '-', artist).lower()
         if artist not in os.listdir(PATH):
-            print(f'Artist({artist}) needs to be scraped first')
-            break
+            print(f'\nSongs of artist{artist}) need to be downloaded first')
+            if input('\nDo you want to proceed with downloading? ["y/n"]: ') == 'y':
+                download_lyrics_html(artist)
+                artists.append(artist)
+            else:
+                print(f'\nArtist({artist}) will be exclude from model\n') 
         else:
             artists.append(artist)
     return artists
 
-# TODO: Check if artist is present in folder otherwise download artist
+# TODO: Account for class imbalances
 
 if __name__ == "__main__":
     artists = get_artists()
