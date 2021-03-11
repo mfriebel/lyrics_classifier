@@ -30,7 +30,7 @@ def get_all_lyric_texts(artist):
     artists_list = []
     # Loop through artist folder
     song_path = os.path.join(PATH, artist)
-    print(f'\nReading songs by {artist}')
+    print(f'\nReading html files by {artist}')
     for fn in tqdm(os.listdir(song_path)):
         text = open(song_path+ '/' + fn).read()
         # Extract lyrics text
@@ -41,14 +41,14 @@ def get_all_lyric_texts(artist):
         if len(lyric_str) > 0: #Skip empty lyric pages
             lyrics_all.append(lyric_str)
             artists_list.append(artist)
-    print(f'{len(lyrics_all)} lyrics retrieved')
+    print(f'{len(lyrics_all)} song lyrics retrieved')
     return artists_list, lyrics_all
 
 def get_labels_lyrics_lists(artists):
     labels_artists = []
     corpus_artists = []
 
-    print('Prepare text corpus and artist labels:\n')
+    print('\nPrepare text corpus and artist labels:')
     for artist in artists:
         label_list, corpus_list = get_all_lyric_texts(artist)
         labels_artists.append(label_list)
@@ -79,7 +79,7 @@ def lyrics_preproc(lyric_string):
 
 def lyrics_all_preprocess(lyric_list):
     preprocess_list = []
-    print('Preprocess text corpus for TF-IDF\n')
+    print('\nPreprocess text corpus for TF-IDF')
     for i, value in enumerate(tqdm(lyric_list)):
             preprocess_list.append(lyrics_preproc(value))
     
