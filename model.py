@@ -108,6 +108,6 @@ if __name__ == "__main__":
     corpus_pre = lyrics_all_preprocess(corpus)
     X_train, X_test, y_train, y_test = train_test_split(corpus_pre, labels, test_size = 0.2, random_state=20)
     model = train_mnb(X_train, y_train, alpha=0.1)
-    print(f'\ntest score: {round(model.score(X_test, y_test), 3)}')
+    print(f'\ntest score: {round(model.score(X_test, y_test), 3)}\n')
     model.fit(corpus_pre, labels)
     pickle.dump(model, open('lyrics_model.pickle', 'wb'))
