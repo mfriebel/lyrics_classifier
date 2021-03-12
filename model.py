@@ -1,4 +1,3 @@
-
 """
 Creates model for artist prediction 
 """
@@ -8,10 +7,12 @@ from extract_lyrics import get_labels_lyrics_lists, lyrics_all_preprocess
 from get_lyrics import download_lyrics_html
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.pipeline import make_pipeline
+#from sklearn.pipeline import make_pipeline
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, classification_report
 from sklearn.model_selection import cross_val_score, train_test_split
+from imblearn.over_sampling import RandomOverSampler, SMOTE
+from imblearn.pipeline import make_pipeline
 from wordcloud import WordCloud
 from pyfiglet import Figlet
 
@@ -74,12 +75,18 @@ def train_mnb(X, y, **kwargs):
     A pipeline with Text-Preprocesser and the trained sklearn.naives_bayes.MultinominalNB classification model. 
     """
     tf = TfidfVectorizer()
+    ros = RandomOverSampler(random_state=20)
+    sm = SMOTE(random_state=20)
     m = MultinomialNB(**kwargs)
-    pipeline = make_pipeline(tf, m)
+    pipeline = make_pipeline(tf, sm, m)
     pipeline.fit(X, y)
     print(f"\ntraining accuracy: {round(pipeline.score(X, y),3)}")
+    #print('\nConfusion matrix:')
+    #print(f'Classes: {pipeline.classes_}')
+    #print(confusion_matrix(y, pipeline.predict(X), labels=pipeline.classes_))
     cross_val = cross_val_score(pipeline, X, y, cv=5)
     print(f'\ncross-validation accuracy: {cross_val.round(3)}')
+
     return pipeline
 
 def get_artists():
@@ -104,14 +111,16 @@ def get_artists():
             None
     return artists
 
-# TODO: Account for class imbalances
 
 if __name__ == "__main__":
+
     artists = get_artists()
     labels, corpus = get_labels_lyrics_lists(artists)
     corpus_pre = lyrics_all_preprocess(corpus)
     X_train, X_test, y_train, y_test = train_test_split(corpus_pre, labels, test_size = 0.2, random_state=20)
     model = train_mnb(X_train, y_train, alpha=0.1)
     print(f'\ntest score: {round(model.score(X_test, y_test), 3)}\n')
+    print('\nClassification report:')
+    print(classification_report(y_test, model.predict(X_test)))
     model.fit(corpus_pre, labels)
     pickle.dump(model, open('lyrics_model.pickle', 'wb'))
