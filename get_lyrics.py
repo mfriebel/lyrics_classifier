@@ -18,28 +18,31 @@ def get_page_buttons(url):
         raise Exception(f'Artist name ("{artist}") does not exists or input could not be handled.')
 
     pages_soup = BeautifulSoup(http_request.text, 'html.parser')
-    pages = pages_soup.body.find_all(attrs={'class':'pagination'})[0]
+    pages = pages_soup.body.find_all(attrs={'class':'pagination'})
+
 
     return pages
 
 def get_all_lyrics_pages(artist):
     """Collects lyrics links from all artists pages"""
     lyrics_url = f"https://www.metrolyrics.com/{artist}-lyrics.html"
-
-    # Retrieve section of html page buttons
-    pages = get_page_buttons(lyrics_url)
     # Get links to lyrics
     all_links = get_lyrics_links(lyrics_url, artist)
+    # Retrieve section of html page buttons if present
+    pages = get_page_buttons(lyrics_url)
 
-    # Loop trough all next pages up to the end
-    while pages.find_all(attrs={'class':'button next'}):
-        # Get link to next page of artist
-        next_page = pages.find_all(attrs={'class':'button next'})[0].get('href')
-        # Update links list with lyrics links of next page
-        all_links += get_lyrics_links(next_page, artist)
-        time.sleep(1)
-        # Go to next page and repeat
-        pages = get_page_buttons(next_page)
+    if len(pages) > 0:
+        # Loop trough all next pages up to the end
+        while pages[0].find_all(attrs={'class':'button next'}):
+            # Get link to next page of artist
+            next_page = pages[0].find_all(attrs={'class':'button next'})[0].get('href')
+            # Update links list with lyrics links of next page
+            all_links += get_lyrics_links(next_page, artist)
+            time.sleep(1)
+            # Go to next page and repeat
+            pages = get_page_buttons(next_page)
+    else:
+        None
 
     return all_links
 
