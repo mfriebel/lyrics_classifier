@@ -3,6 +3,7 @@
 Creates model for artist prediction 
 """
 # Import statements
+from numpy import empty
 from extract_lyrics import get_labels_lyrics_lists, lyrics_all_preprocess
 from get_lyrics import download_lyrics_html
 
@@ -85,19 +86,22 @@ def get_artists():
     banner = Figlet()
     print(banner.renderText('TRAIN NLP MODEL'))
     artists = []
-    num_artist = int(input('Please enter the number of artists to train your model with: '))
-    for _ in range(num_artist):
-        artist = input('Please enter the artist: ')
+    print('Please enter the artists to train your model with\n')
+    artist = 'start value'
+    while artist:
+        artist = input(f'Please enter the artist: ')
         artist = re.sub('[\s]', '-', artist).lower()
-        if artist not in os.listdir(PATH):
-            print(f'\nSongs of artist{artist}) need to be downloaded first')
+        if (artist not in os.listdir(PATH)) and (artist):
+            print(f'\nSongs of artist({artist}) need to be downloaded first')
             if input('\nDo you want to proceed with downloading? ["y/n"]: ') == 'y':
                 download_lyrics_html(artist)
                 artists.append(artist)
             else:
                 print(f'\nArtist({artist}) will be exclude from model\n') 
-        else:
+        elif artist:
             artists.append(artist)
+        else:
+            None
     return artists
 
 # TODO: Account for class imbalances
